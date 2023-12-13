@@ -1,16 +1,6 @@
-from utils import load_jsonl
+from utils import load_jsonl, process_options, option_map
 
 
-def process_options(option):
-    return option.strip("(").strip(")").strip()
-
-option_map = {
-    0: "A",
-    1: "B",
-    2: "C",
-    3: "D",
-    4: "E"
-}
 
 def accuracy(data, answer_lambda=lambda x:x["answer"]):
     correct_count = 0

@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-from projects.anlp_assignment4.utils import load_jsonl
+from projects.anlp_assignment4.utils import add_pred_key, load_jsonl, write_jsonl
 
 
 ARTICLE = "article"
@@ -102,13 +102,16 @@ if __name__ == "__main__":
     correct_v1 = 0
     correct_v2 = 0
     for dp in dev_dataset:
+        
         predicted_option = single_option_generation_v1(dp, model, tokenizer)
-        dp["predictions"]["vanilla"]["single_option_generation_v1"] = predicted_option
+        dp = add_pred_key(dp, "predictions", "vanilla_single_option", "single_option_generation_v1")
+        dp["predictions"]["vanilla_single_option"]["single_option_generation_v1"] = predicted_option
         if predicted_option == dp["label"]:
             correct_v1+=1
 
         predicted_option = single_option_generation_v2(dp, model, tokenizer)
-        dp["predictions"]["vanilla"]["single_option_generation_v2"] = predicted_option
+        dp = add_pred_key(dp, "predictions", "vanilla_single_option", "single_option_generation_v2")
+        dp["predictions"]["vanilla_single_option"]["single_option_generation_v2"] = predicted_option
         if predicted_option == dp["label"]:
             correct_v2+=1
 
@@ -117,6 +120,8 @@ if __name__ == "__main__":
 
     print(accuracy_v1)
     print(accuracy_v2)
+
+    write_jsonl("./data/baseline/dev_baseline.jsonl", dev_dataset)
 
 
 
