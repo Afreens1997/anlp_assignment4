@@ -12,9 +12,9 @@ def get_negative_option(tokenizer, model, prompt, article, summary):
     return tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
     
 def create_negative_augmentation_dataset():
-    train_dataset = load_jsonl("./data/enhanced_v1/train.jsonl")
-    test_dataset = load_jsonl("./data/enhanced_v1/test.jsonl")
-    dev_dataset = load_jsonl("./data/enhanced_v1/dev.jsonl")
+    train_dataset = load_jsonl("./data/dataset/NAL/train.jsonl")
+    test_dataset = load_jsonl("./data/dataset/NAL/test.jsonl")
+    dev_dataset = load_jsonl("./data/dataset/NAL/dev.jsonl")
 
     sample_article = 'Notices of intended prosecution claimed 991 drivers had broken a 40mph (64km/h) speed limit in Conwy tunnel last October. But the limit had been imposed for night maintenance only and not lifted in the morning as it should have been. Within days the drivers got an apology in the post. North Wales Police released the figures in a Freedom of Information reply. The force said: \"The issue was caused by an administration error surrounding the enforcement period. \"North Wales police do not record the cost of cancelling notices.\"'
     sample_summary = "Nearly 1,000 drivers were wrongly sent speeding notices after a @placeholder limit on a north Wales road was not lifted , figures have shown ."
@@ -37,7 +37,7 @@ def create_negative_augmentation_dataset():
         print(option_5)
         dp["option_5"] = option_5
         if i%50 == 0:
-            write_jsonl("./data/enhanced_v1/train.jsonl", train_dataset)
+            write_jsonl("./data/dataset/NAL/train.jsonl", train_dataset)
 
 
     for i, dp in enumerate(test_dataset):
@@ -49,7 +49,7 @@ def create_negative_augmentation_dataset():
         print(option_5)
         dp["option_5"] = option_5
         if i%50 == 0:
-            write_jsonl("./data/enhanced_v1/train.jsonl", test_dataset)
+            write_jsonl("./data/dataset/NAL/train.jsonl", test_dataset)
 
     for i, dp in enumerate(dev_dataset):
         if "option_5" in dp:
@@ -60,10 +60,10 @@ def create_negative_augmentation_dataset():
         print(option_5)
         dp["option_5"] = option_5
         if i%50 == 0:
-            write_jsonl("./data/enhanced_v1/train.jsonl", dev_dataset)
+            write_jsonl("./data/dataset/NAL/train.jsonl", dev_dataset)
 
-    write_jsonl("./data/enhanced_v1/train.jsonl", train_dataset)
-    write_jsonl("./data/enhanced_v1/test.jsonl", test_dataset)
-    write_jsonl("./data/enhanced_v1/dev.jsonl", dev_dataset)
+    write_jsonl("./data/dataset/NAL/train.jsonl", train_dataset)
+    write_jsonl("./data/dataset/NAL/test.jsonl", test_dataset)
+    write_jsonl("./data/dataset/NAL/dev.jsonl", dev_dataset)
 
 create_negative_augmentation_dataset()
