@@ -183,7 +183,6 @@ if __name__ == "__main__":
 
             
             for dp, ans in zip(datapoints, answers):
-                print("Slay")
                 dp = add_pred_key(dp, "predictions", "vanilla_multi_circular", prompt_key)
                 # print(dp)
                 dp["predictions"]["vanilla_multi_circular"][prompt_key] = ans
