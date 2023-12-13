@@ -2,6 +2,7 @@ import json
 
 # FILE UTILS:
 def load_jsonl(file_path):
+    print('reading from', file_path)
     data = []
     with open(file_path, 'r') as file:
         for line in file:
@@ -13,8 +14,6 @@ def write_jsonl(filename, data):
     print('writing to', filename)
     with open(filename, "w+") as outfile:
         for idx, element in enumerate(data):
-            # print(round(idx * 100 / len(data), 2), "%", end="\r")
-            # sys.stdout.flush()
             json.dump(element, outfile)
             outfile.write("\n")
 
