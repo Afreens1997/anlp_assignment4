@@ -222,6 +222,7 @@ class DataProcessor:
 
 
 class MCQDataset(Dataset):
+    # Dataset class
     def __init__(self, tokenizer, data_dir, type_path, max_len=512):
         self.data_dir = data_dir
         self.type_path = type_path
