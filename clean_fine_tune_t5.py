@@ -401,5 +401,12 @@ train_params = dict(
     default_root_dir="large_models",
 )
 model = train_function(args, train_params)
-validation_function(model, args)
+
+import sys
+
+if len(sys.argv) > 1 and sys.argv[1] == "reorder":
+    validation_function(model, args, perform_reordering=True)
+else:
+    validation_function(model, args)
+
 inference_function(model, args)
