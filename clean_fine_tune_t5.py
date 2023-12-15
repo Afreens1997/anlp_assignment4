@@ -7,7 +7,7 @@
 # !pip install -q jsonlines
 '''
 import jsonlines
-import argparse
+import argparse, random
 import os
 import logging
 import random
@@ -217,12 +217,14 @@ class DataProcessor:
             ))
         return examples
 
-    def get_labels(self):
+    def get_labels(self, is_negative_augmented=False):
+        if is_negative_augmented:
+            return ["A", "B", "C", "D", "E", "F"]
+        
         return ["A", "B", "C", "D", "E"]
 
 
 class MCQDataset(Dataset):
-    # Dataset class
     def __init__(self, tokenizer, data_dir, type_path, max_len=512):
         self.data_dir = data_dir
         self.type_path = type_path
@@ -230,6 +232,7 @@ class MCQDataset(Dataset):
         self.tokenizer = tokenizer
         self.inputs = []
         self.targets = []
+        self.reordering_limit=10
 
         self.proc = DataProcessor()
 
@@ -252,25 +255,53 @@ class MCQDataset(Dataset):
             examples = self.proc.get_train_examples(self.data_dir)
         elif self.type_path == 'val':
             examples = self.proc.get_dev_examples(self.data_dir)
-        else:
+        elif self.type_path == "test":
             examples = self.proc.get_test_examples(self.data_dir, test_mode=True)
+        elif self.type_path == 'reorder_val':
+            examples = self.proc.get_dev_examples(self.data_dir)
 
         for example in examples:
-            self._create_features(example)
+            self._create_features(example, test_mode=self.type_path == "test", is_reorder=self.type_path == 'reorder_val')
 
-    def _create_features(self, example, test_mode=False):
+    def _create_features(self, example, test_mode=False, is_reorder=False):
+
         input_ = example.input_text
         target_label, tokenized_targets = None, None
         if not test_mode:
             target_label = "%s </s>" % (example.output_text)
-        tokenized_inputs = self.tokenizer.batch_encode_plus([input_], max_length=self.max_len, truncation=True, pad_to_max_length=True, return_tensors="pt")
-        
-        if not test_mode:
-            tokenized_targets = self.tokenizer.batch_encode_plus([target_label], max_length=2, truncation=True, pad_to_max_length=True, return_tensors="pt")
-        
-        self.inputs.append(tokenized_inputs)
-        if not test_mode:
-            self.targets.append(tokenized_targets)
+
+        if is_reorder:
+            options = input_.split(" ")[-5:]
+            text = input_.split(" ")[:-5]
+            label = ord(target_label[0]) - ord('A')
+            permute_options = [(txt, i) for i, txt in enumerate(options)]
+            inputs, labels = [], []
+            
+            for it in self.reordering_limit:
+                random.shuffle(permute_options)
+                modified_input = " ".join(text + [opt[0] for opt in permute_options])
+                modified_label = None
+                for i, opt in enumerate(permute_options):
+                    if opt[1] == label:
+                        modified_label = i
+                        break
+                modified_label = "%s </s>" % (str(modified_label))
+
+                tokenized_inputs = self.tokenizer.batch_encode_plus([modified_input], max_length=self.max_len, truncation=True, pad_to_max_length=True, return_tensors="pt")
+                tokenized_targets = self.tokenizer.batch_encode_plus([modified_label], max_length=2, truncation=True, pad_to_max_length=True, return_tensors="pt")
+                inputs.append(tokenized_inputs)
+                labels.append(tokenized_targets)
+            self.inputs += inputs
+            self.targets += labels
+        else:
+            tokenized_inputs = self.tokenizer.batch_encode_plus([input_], max_length=self.max_len, truncation=True, pad_to_max_length=True, return_tensors="pt")
+            
+            if not test_mode:
+                tokenized_targets = self.tokenizer.batch_encode_plus([target_label], max_length=2, truncation=True, pad_to_max_length=True, return_tensors="pt")
+            
+            self.inputs.append(tokenized_inputs)
+            if not test_mode:
+                self.targets.append(tokenized_targets)
 
 
 def get_dataset(tokenizer, type_path, args):
@@ -287,9 +318,9 @@ def perform_initial_steps(seed):
     logger = logging.getLogger(__name__)
     return logger
 
-def validation_function(model, args):
+def validation_function(model, args, perform_reordering=False):
     tokenizer = T5Tokenizer.from_pretrained(args.tokenizer_name_or_path)
-    dataset = MCQDataset(tokenizer, data_dir='./dataset', type_path='val')
+    dataset = MCQDataset(tokenizer, data_dir='./dataset', type_path='val' if not perform_reordering else "reorder_val")
     loader = DataLoader(dataset, batch_size=2, num_workers=1)
 
     model.model.eval()
@@ -327,7 +358,6 @@ def inference_function(model, args):
 
     outputs_1 = [o[-1] for o in outputs]
     return outputs_1
-
 
 logger = perform_initial_steps(42)
 
