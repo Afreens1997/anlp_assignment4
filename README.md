@@ -1,6 +1,9 @@
 # anlp_assignment4
 
-*Setup the environment:*
+# Code and Folder Descriptions:
+![file description](file_description.jpeg)
+
+# *Setup the environment:*
 
 pip install "transformers==4.27.1" "datasets==2.9.0" "accelerate==0.17.1" "evaluate==0.4.0" "bitsandbytes==0.37.1" loralib --upgrade --quiet
 pip install -q pytorch_lightning
@@ -13,8 +16,8 @@ pip install tensorboard py7zr
 
 - Execute the following commands to run the baseline model:
 
-python baseline.py
-python evaluate.py
+python ./generation_scripts/*.py
+python evaluate.py (replace the filenames in the main method)
 
 - Execute the following commands to run the finetuning code:
 python clean_fine_tune_t5.py
