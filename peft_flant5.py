@@ -239,7 +239,12 @@ def evaluate_peft_model(sample,max_target_length=50):
     labels = tokenizer.decode(labels, skip_special_tokens=True)
     return prediction, labels
 
-test_dataset = MCQDataset(tokenizer, data_dir='./dataset', type_path='val')
+import sys
+
+if len(sys.argv) > 1 and sys.argv[1] == "reorder":
+    test_dataset = MCQDataset(tokenizer, data_dir='./dataset', type_path='reorder_val')
+else:
+    test_dataset = MCQDataset(tokenizer, data_dir='./dataset', type_path='val')
 
 predictions, references = [] , []
 for sample in tqdm(test_dataset):
